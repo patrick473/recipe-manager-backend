@@ -1,0 +1,266 @@
+openapi: 3.0.3
+info:
+  title: Recipe Manager API
+  description: |
+    REST API for creating, reading, updating, and deleting Markdown-based recipes.
+
+    The API uses JSON throughout, validates all write payloads, and returns
+    [RFC 7807](https://www.rfc-editor.org/rfc/rfc7807) Problem Details on errors.
+  version: 0.0.1
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  contact:
+    name: Recipe Manager
+    url: https://github.com/patrick473/recipe-manager-backend
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+  - url: https://api.recipe-manager.example.com
+    description: Production server
+
+tags:
+  - name: Recipes
+    description: Create, read, update, and delete Markdown-based recipes
+
+paths:
+  /recipes:
+    get:
+      summary: List all recipes
+      description: Returns every recipe in the database ordered by ascending id.
+      operationId: listRecipes
+      tags: [Recipes]
+      responses:
+        "200":
+          description: Success — an (possibly empty) array of recipes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RecipeResponse"
+              example:
+                - id: 1
+                  title: Classic Banana Bread
+                  description: Moist and simple banana bread, ready in 1 hour
+                  content: "## Ingredients\n- 3 ripe bananas\n\n## Steps\n1. Mash bananas."
+                  createdAt: "2024-01-15T09:00:00Z"
+                  updatedAt: "2024-01-15T09:00:00Z"
+
+    post:
+      summary: Create a recipe
+      description: >
+        Persists a new recipe and returns the created resource, including the
+        auto-generated `id` and timestamps.
+      operationId: createRecipe
+      tags: [Recipes]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecipeRequest"
+            example:
+              title: Classic Banana Bread
+              description: Moist and simple banana bread, ready in 1 hour
+              content: "## Ingredients\n- 3 ripe bananas\n\n## Steps\n1. Mash bananas."
+      responses:
+        "201":
+          description: Recipe created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecipeResponse"
+        "400":
+          description: Validation failed — one or more required fields are missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+              example:
+                type: "https://example.com/errors/validation-failed"
+                title: Validation Failed
+                status: 400
+                detail: Request validation failed
+                errors:
+                  title: "Title must not be blank"
+
+  /recipes/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Recipe surrogate key
+        schema:
+          type: integer
+          format: int64
+          example: 1
+
+    get:
+      summary: Get a single recipe
+      description: Returns the recipe with the given `id`.
+      operationId: getRecipe
+      tags: [Recipes]
+      responses:
+        "200":
+          description: Recipe found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecipeResponse"
+        "404":
+          description: No recipe exists with the given `id`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+              example:
+                type: "https://example.com/errors/recipe-not-found"
+                title: Recipe Not Found
+                status: 404
+                detail: "Recipe not found: 99"
+
+    put:
+      summary: Update a recipe
+      description: >
+        Replaces all mutable fields (`title`, `description`, `content`) on an
+        existing recipe. The `id`, `createdAt`, and `updatedAt` fields are
+        managed by the server and cannot be set by the caller.
+      operationId: updateRecipe
+      tags: [Recipes]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecipeRequest"
+      responses:
+        "200":
+          description: Recipe updated — returns the full updated resource
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecipeResponse"
+        "400":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "404":
+          description: No recipe exists with the given `id`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+
+    delete:
+      summary: Delete a recipe
+      description: >
+        Permanently removes the recipe. Returns 204 on success. Returns 404 if
+        no recipe with the given `id` exists.
+      operationId: deleteRecipe
+      tags: [Recipes]
+      responses:
+        "204":
+          description: Recipe deleted — no content
+        "404":
+          description: No recipe exists with the given `id`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+
+components:
+  schemas:
+    RecipeRequest:
+      type: object
+      description: Payload for creating or replacing a recipe
+      required:
+        - title
+        - content
+      properties:
+        title:
+          type: string
+          maxLength: 255
+          description: Short human-readable title shown in the recipe list
+          example: Classic Banana Bread
+        description:
+          type: string
+          maxLength: 512
+          nullable: true
+          description: Optional one-line summary displayed below the title
+          example: Moist and simple banana bread, ready in 1 hour
+        content:
+          type: string
+          description: Full recipe body in Markdown format
+          example: "## Ingredients\n- 3 ripe bananas\n\n## Steps\n1. Mash bananas."
+
+    RecipeResponse:
+      type: object
+      description: A recipe as returned by the API
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Auto-generated surrogate key
+          example: 1
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+          description: Short human-readable title
+          example: Classic Banana Bread
+        description:
+          type: string
+          maxLength: 512
+          nullable: true
+          description: Optional one-line summary
+          example: Moist and simple banana bread, ready in 1 hour
+        content:
+          type: string
+          description: Full recipe body in Markdown format
+          example: "## Ingredients\n- 3 ripe bananas\n\n## Steps\n1. Mash bananas."
+        createdAt:
+          type: string
+          format: date-time
+          description: UTC timestamp of first creation
+          example: "2024-01-15T09:00:00Z"
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date-time
+          description: UTC timestamp of last modification
+          example: "2024-01-15T10:30:00Z"
+          readOnly: true
+
+    ProblemDetail:
+      type: object
+      description: RFC 7807 Problem Details object returned on errors
+      properties:
+        type:
+          type: string
+          format: uri
+          description: URI identifying the error type
+          example: "https://example.com/errors/recipe-not-found"
+        title:
+          type: string
+          description: Short, human-readable summary of the problem type
+          example: Recipe Not Found
+        status:
+          type: integer
+          description: HTTP status code
+          example: 404
+        detail:
+          type: string
+          description: Human-readable explanation of this specific occurrence
+          example: "Recipe not found: 99"
+        errors:
+          type: object
+          description: Field-level validation errors (only present on 400 responses)
+          additionalProperties:
+            type: string
+          example:
+            title: "Title must not be blank"
+            content: "Content must not be blank"
