@@ -200,6 +200,13 @@ components:
     RecipeResponse:
       type: object
       description: A recipe as returned by the API
+      required:
+        - id
+        - title
+        - description
+        - content
+        - createdAt
+        - updatedAt
       properties:
         id:
           type: integer
