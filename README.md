@@ -18,7 +18,7 @@ Spring Boot REST API for the Recipe Manager application. Exposes five CRUD endpo
 
 ## Quick start
 
-Requirements: Java 17+, Maven 3.9+.
+Requirements: Java 25+, Maven 3.9+. No Maven wrapper is checked in, so use the system `mvn`.
 
 ```bash
 # Clone and run
@@ -26,7 +26,7 @@ git clone https://github.com/patrick473/recipe-manager-backend.git
 cd recipe-manager-backend
 
 # Run in development mode (H2 in-memory database)
-./mvnw spring-boot:run
+mvn spring-boot:run
 
 # The API is available at:
 #   http://localhost:8080/recipes
@@ -207,7 +207,9 @@ spring.h2.console.enabled=false
 ## Running tests
 
 ```bash
-./mvnw test
+mvn test
+mvn test -Dtest=ClassName                # single test class
+mvn test -Dtest=ClassName#methodName     # single test method
 ```
 
 ---
