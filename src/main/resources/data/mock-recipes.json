@@ -1,0 +1,182 @@
+[
+  {
+    "title": "Classic Pancakes",
+    "description": "Fluffy breakfast pancakes from scratch.",
+    "content": "## Ingredients\n\n- 1 1/2 cups all-purpose flour\n- 3 1/2 tsp baking powder\n- 1 tsp salt\n- 1 tbsp sugar\n- 1 1/4 cups milk\n- 1 egg\n- 3 tbsp melted butter\n\n## Instructions\n\n1. Whisk together flour, baking powder, salt, and sugar.\n2. In a separate bowl, mix milk, egg, and melted butter.\n3. Combine wet and dry ingredients, stirring until just mixed.\n4. Pour 1/4 cup batter per pancake onto a hot, greased griddle.\n5. Cook until bubbles form on the surface, then flip and cook until golden.\n",
+    "tags": ["breakfast", "quick"],
+    "prepTimeMinutes": 10,
+    "cookTimeMinutes": 15,
+    "servings": 4
+  },
+  {
+    "title": "Spaghetti Carbonara",
+    "description": "Classic Roman pasta with eggs, pecorino, and crispy pancetta.",
+    "content": "## Ingredients\n\n- 400g spaghetti\n- 150g pancetta, diced\n- 3 large eggs\n- 1 cup grated pecorino romano\n- 1 tsp black pepper\n- salt to taste\n\n## Instructions\n\n1. Bring a large pot of salted water to boil and cook spaghetti until al dente.\n2. While pasta cooks, fry pancetta in a skillet until crisp.\n3. Whisk eggs and pecorino together in a bowl.\n4. Drain pasta, reserving 1 cup of pasta water, and add pasta to the skillet with pancetta off heat.\n5. Quickly stir in the egg mixture, adding pasta water a splash at a time until creamy.\n6. Season with black pepper and serve immediately.\n",
+    "tags": ["dinner", "italian", "pasta"],
+    "prepTimeMinutes": 10,
+    "cookTimeMinutes": 15,
+    "servings": 4
+  },
+  {
+    "title": "Chicken Tikka Masala",
+    "description": "Marinated grilled chicken simmered in a spiced tomato-cream sauce.",
+    "content": "## Ingredients\n\n- 700g chicken thighs, cubed\n- 1 cup yogurt\n- 2 tbsp tikka masala spice blend\n- 1 onion, diced\n- 3 cloves garlic, minced\n- 1 tbsp ginger, minced\n- 400g crushed tomatoes\n- 1 cup heavy cream\n- 2 tbsp butter\n- salt to taste\n\n## Instructions\n\n1. Marinate chicken in yogurt and half the spice blend for at least 30 minutes.\n2. Grill or pan-sear chicken until charred and cooked through, then set aside.\n3. In the same pan, melt butter and saute onion, garlic, and ginger until soft.\n4. Stir in remaining spice blend and crushed tomatoes, and simmer for 10 minutes.\n5. Stir in cream and cooked chicken, and simmer until heated through.\n6. Serve over rice with naan.\n",
+    "tags": ["dinner", "indian", "spicy"],
+    "prepTimeMinutes": 30,
+    "cookTimeMinutes": 30,
+    "servings": 4
+  },
+  {
+    "title": "Classic Beef Tacos",
+    "description": "Seasoned ground beef tacos with fresh toppings.",
+    "content": "## Ingredients\n\n- 500g ground beef\n- 1 packet taco seasoning (or 2 tbsp chili powder blend)\n- 8 small corn tortillas\n- 1 cup shredded lettuce\n- 1 cup diced tomato\n- 1 cup shredded cheddar\n- sour cream to taste\n\n## Instructions\n\n1. Brown ground beef in a skillet over medium heat, breaking it up as it cooks.\n2. Drain excess fat, then stir in taco seasoning and a splash of water, simmering for 5 minutes.\n3. Warm tortillas in a dry skillet or microwave.\n4. Fill each tortilla with beef, lettuce, tomato, and cheddar.\n5. Top with sour cream and serve.\n",
+    "tags": ["dinner", "mexican", "quick"],
+    "prepTimeMinutes": 10,
+    "cookTimeMinutes": 15,
+    "servings": 4
+  },
+  {
+    "title": "Margherita Pizza",
+    "description": "Simple Neapolitan-style pizza with tomato, mozzarella, and basil.",
+    "content": "## Ingredients\n\n- 1 pizza dough ball\n- 1/2 cup crushed San Marzano tomatoes\n- 200g fresh mozzarella, torn\n- fresh basil leaves\n- 2 tbsp olive oil\n- salt to taste\n\n## Instructions\n\n1. Preheat oven to its highest setting with a pizza stone or steel inside, if available.\n2. Stretch the dough into a round on a floured surface.\n3. Spread crushed tomatoes evenly, leaving a border for the crust.\n4. Top with torn mozzarella and a drizzle of olive oil.\n5. Bake until the crust is golden and cheese is bubbling, 10-12 minutes.\n6. Top with fresh basil and a pinch of salt before serving.\n",
+    "tags": ["dinner", "italian", "vegetarian"],
+    "prepTimeMinutes": 20,
+    "cookTimeMinutes": 12,
+    "servings": 2
+  },
+  {
+    "title": "Vegetable Stir Fry",
+    "description": "Quick high-heat stir fry with crisp vegetables in a savory sauce.",
+    "content": "## Ingredients\n\n- 2 cups broccoli florets\n- 1 red bell pepper, sliced\n- 1 carrot, julienned\n- 1 cup snap peas\n- 3 tbsp soy sauce\n- 1 tbsp sesame oil\n- 2 cloves garlic, minced\n- 1 tbsp cornstarch\n- 2 tbsp vegetable oil\n\n## Instructions\n\n1. Whisk soy sauce, sesame oil, and cornstarch together in a small bowl to make the sauce.\n2. Heat vegetable oil in a wok over high heat until shimmering.\n3. Add garlic and stir-fry for 30 seconds until fragrant.\n4. Add vegetables and stir-fry for 4-5 minutes until crisp-tender.\n5. Pour in the sauce and toss until it thickens and coats the vegetables.\n6. Serve immediately over rice or noodles.\n",
+    "tags": ["dinner", "vegan", "asian", "quick"],
+    "prepTimeMinutes": 15,
+    "cookTimeMinutes": 10,
+    "servings": 3
+  },
+  {
+    "title": "Greek Salad",
+    "description": "Crisp cucumber and tomato salad with feta, olives, and oregano.",
+    "content": "## Ingredients\n\n- 4 tomatoes, cut into wedges\n- 1 cucumber, sliced\n- 1 red onion, thinly sliced\n- 200g feta, cubed\n- 1/2 cup kalamata olives\n- 3 tbsp olive oil\n- 1 tbsp red wine vinegar\n- 1 tsp dried oregano\n\n## Instructions\n\n1. Combine tomatoes, cucumber, and red onion in a large bowl.\n2. Add feta and olives on top.\n3. Whisk olive oil, red wine vinegar, and oregano together in a small bowl.\n4. Drizzle dressing over the salad just before serving.\n",
+    "tags": ["lunch", "vegetarian", "mediterranean", "no-cook"],
+    "prepTimeMinutes": 15,
+    "cookTimeMinutes": 0,
+    "servings": 4
+  },
+  {
+    "title": "Creamy Tomato Soup",
+    "description": "Smooth roasted tomato soup finished with cream.",
+    "content": "## Ingredients\n\n- 1kg ripe tomatoes, halved\n- 1 onion, quartered\n- 3 cloves garlic\n- 3 tbsp olive oil\n- 2 cups vegetable stock\n- 1/2 cup heavy cream\n- salt and pepper to taste\n\n## Instructions\n\n1. Preheat oven to 200C (400F).\n2. Toss tomatoes, onion, and garlic with olive oil and roast for 30 minutes until caramelized.\n3. Transfer roasted vegetables to a pot with vegetable stock and bring to a simmer.\n4. Blend the mixture until smooth using an immersion blender.\n5. Stir in the cream and season with salt and pepper.\n6. Serve hot with crusty bread.\n",
+    "tags": ["lunch", "soup", "vegetarian"],
+    "prepTimeMinutes": 10,
+    "cookTimeMinutes": 35,
+    "servings": 4
+  },
+  {
+    "title": "Grilled Cheese Sandwich",
+    "description": "Buttery pan-grilled sandwich with melted cheese.",
+    "content": "## Ingredients\n\n- 2 slices sandwich bread\n- 2 slices cheddar cheese\n- 1 tbsp butter, softened\n\n## Instructions\n\n1. Butter one side of each bread slice.\n2. Place one slice butter-side down in a skillet over medium-low heat.\n3. Layer cheese on top, then close with the second slice, butter-side up.\n4. Cook until golden brown, then flip and cook the other side until the cheese is fully melted.\n5. Slice in half and serve warm.\n",
+    "tags": ["lunch", "quick", "comfort-food"],
+    "prepTimeMinutes": 5,
+    "cookTimeMinutes": 8,
+    "servings": 1
+  },
+  {
+    "title": "Avocado Toast",
+    "description": "Toasted bread topped with mashed avocado, lemon, and chili flakes.",
+    "content": "## Ingredients\n\n- 2 slices sourdough bread\n- 1 ripe avocado\n- 1/2 lemon, juiced\n- 1/4 tsp chili flakes\n- salt to taste\n\n## Instructions\n\n1. Toast the bread slices until golden and crisp.\n2. Mash the avocado with lemon juice and a pinch of salt in a bowl.\n3. Spread the mashed avocado evenly over the toast.\n4. Sprinkle with chili flakes and serve immediately.\n",
+    "tags": ["breakfast", "vegan", "quick"],
+    "prepTimeMinutes": 5,
+    "cookTimeMinutes": 3,
+    "servings": 1
+  },
+  {
+    "title": "Overnight Oats",
+    "description": "No-cook make-ahead oats soaked in milk with fruit and honey.",
+    "content": "## Ingredients\n\n- 1/2 cup rolled oats\n- 1/2 cup milk (or plant milk)\n- 1 tbsp chia seeds\n- 1 tbsp honey or maple syrup\n- 1/2 cup mixed berries\n\n## Instructions\n\n1. Combine oats, milk, chia seeds, and honey in a jar or container.\n2. Stir well to make sure the oats are fully submerged.\n3. Cover and refrigerate overnight, or at least 4 hours.\n4. Top with fresh berries before serving.\n",
+    "tags": ["breakfast", "vegan", "make-ahead"],
+    "prepTimeMinutes": 5,
+    "cookTimeMinutes": 0,
+    "servings": 1
+  },
+  {
+    "title": "Banana Bread",
+    "description": "Moist banana bread loaf spiced with cinnamon.",
+    "content": "## Ingredients\n\n- 3 ripe bananas, mashed\n- 1/3 cup melted butter\n- 3/4 cup sugar\n- 1 egg\n- 1 tsp vanilla extract\n- 1 tsp baking soda\n- pinch of salt\n- 1 tsp cinnamon\n- 1 1/2 cups all-purpose flour\n\n## Instructions\n\n1. Preheat oven to 175C (350F) and grease a loaf pan.\n2. Mix mashed bananas with melted butter in a large bowl.\n3. Stir in sugar, egg, and vanilla extract.\n4. Sprinkle baking soda, salt, and cinnamon over the mixture and stir in.\n5. Fold in the flour until just combined, then pour batter into the loaf pan.\n6. Bake for 55-60 minutes, until a toothpick inserted in the center comes out clean.\n",
+    "tags": ["dessert", "baking", "breakfast"],
+    "prepTimeMinutes": 15,
+    "cookTimeMinutes": 60,
+    "servings": 8
+  },
+  {
+    "title": "Chocolate Chip Cookies",
+    "description": "Chewy classic cookies loaded with chocolate chips.",
+    "content": "## Ingredients\n\n- 1 cup butter, softened\n- 3/4 cup sugar\n- 3/4 cup brown sugar\n- 2 eggs\n- 1 tsp vanilla extract\n- 2 1/4 cups all-purpose flour\n- 1 tsp baking soda\n- 1 tsp salt\n- 2 cups chocolate chips\n\n## Instructions\n\n1. Preheat oven to 190C (375F) and line baking sheets with parchment paper.\n2. Cream butter with sugar and brown sugar until light and fluffy.\n3. Beat in eggs and vanilla extract.\n4. Mix in flour, baking soda, and salt until just combined, then fold in chocolate chips.\n5. Drop rounded tablespoons of dough onto the baking sheets, spaced apart.\n6. Bake for 9-11 minutes until edges are golden, then cool on the sheet for a few minutes before transferring to a rack.\n",
+    "tags": ["dessert", "baking"],
+    "prepTimeMinutes": 15,
+    "cookTimeMinutes": 12,
+    "servings": 24
+  },
+  {
+    "title": "Classic Beef Burger",
+    "description": "Juicy grilled beef patty with classic burger toppings.",
+    "content": "## Ingredients\n\n- 600g ground beef (80/20)\n- 4 burger buns\n- 4 slices cheddar cheese\n- lettuce, tomato, and onion slices\n- salt and pepper to taste\n- condiments to taste\n\n## Instructions\n\n1. Divide ground beef into 4 equal portions and shape into patties, seasoning both sides with salt and pepper.\n2. Heat a grill or skillet over medium-high heat.\n3. Cook patties for 3-4 minutes per side, adding cheese in the last minute to melt.\n4. Toast the buns lightly on the grill or in a skillet.\n5. Assemble burgers with lettuce, tomato, onion, and condiments of choice.\n",
+    "tags": ["dinner", "quick", "grill"],
+    "prepTimeMinutes": 10,
+    "cookTimeMinutes": 10,
+    "servings": 4
+  },
+  {
+    "title": "Shrimp Scampi",
+    "description": "Garlicky buttery shrimp tossed with linguine and white wine.",
+    "content": "## Ingredients\n\n- 450g linguine\n- 500g large shrimp, peeled and deveined\n- 4 tbsp butter\n- 4 cloves garlic, minced\n- 1/2 cup dry white wine\n- 1/4 cup lemon juice\n- red pepper flakes to taste\n- chopped parsley for garnish\n\n## Instructions\n\n1. Cook linguine in salted boiling water until al dente, then drain.\n2. Melt butter in a large skillet over medium heat and saute garlic until fragrant.\n3. Add shrimp and cook until just pink, about 2 minutes per side, then remove from the skillet.\n4. Pour in white wine and lemon juice, and simmer to reduce slightly.\n5. Return shrimp to the skillet along with the cooked linguine, tossing to coat.\n6. Garnish with parsley and red pepper flakes before serving.\n",
+    "tags": ["dinner", "seafood", "pasta"],
+    "prepTimeMinutes": 10,
+    "cookTimeMinutes": 15,
+    "servings": 4
+  },
+  {
+    "title": "Vegetable Fried Rice",
+    "description": "Wok-fried rice with mixed vegetables and soy sauce.",
+    "content": "## Ingredients\n\n- 3 cups cooked, cooled rice\n- 1 cup frozen peas and carrots\n- 1/2 onion, diced\n- 2 cloves garlic, minced\n- 3 tbsp soy sauce\n- 1 tbsp sesame oil\n- 2 tbsp vegetable oil\n- 2 green onions, sliced\n\n## Instructions\n\n1. Heat vegetable oil in a wok or large skillet over high heat.\n2. Add onion and garlic, stir-frying until fragrant.\n3. Add peas and carrots and cook for 2 minutes.\n4. Add the cooked rice, breaking up any clumps, and stir-fry for 3-4 minutes.\n5. Drizzle in soy sauce and sesame oil, tossing to coat evenly.\n6. Garnish with green onions and serve hot.\n",
+    "tags": ["dinner", "vegan", "asian", "quick"],
+    "prepTimeMinutes": 10,
+    "cookTimeMinutes": 10,
+    "servings": 4
+  },
+  {
+    "title": "Chicken Caesar Salad",
+    "description": "Grilled chicken over romaine with Caesar dressing and croutons.",
+    "content": "## Ingredients\n\n- 2 chicken breasts\n- 1 head romaine lettuce, chopped\n- 1/2 cup Caesar dressing\n- 1/2 cup croutons\n- 1/4 cup shaved parmesan\n- salt and pepper to taste\n\n## Instructions\n\n1. Season chicken breasts with salt and pepper and grill or pan-sear until cooked through, about 6 minutes per side.\n2. Let chicken rest for 5 minutes, then slice.\n3. Toss romaine lettuce with Caesar dressing in a large bowl.\n4. Top with sliced chicken, croutons, and shaved parmesan.\n5. Serve immediately.\n",
+    "tags": ["lunch", "salad"],
+    "prepTimeMinutes": 15,
+    "cookTimeMinutes": 12,
+    "servings": 2
+  },
+  {
+    "title": "Homemade Guacamole",
+    "description": "Chunky avocado dip with lime, cilantro, and jalapeno.",
+    "content": "## Ingredients\n\n- 3 ripe avocados\n- 1 lime, juiced\n- 1/2 red onion, finely diced\n- 1 jalapeno, seeded and minced\n- 2 tbsp chopped cilantro\n- salt to taste\n\n## Instructions\n\n1. Halve avocados, remove pits, and scoop flesh into a bowl.\n2. Mash to desired consistency with a fork.\n3. Stir in lime juice, red onion, jalapeno, and cilantro.\n4. Season with salt to taste.\n5. Serve immediately with tortilla chips.\n",
+    "tags": ["snack", "appetizer", "vegan", "no-cook"],
+    "prepTimeMinutes": 10,
+    "cookTimeMinutes": 0,
+    "servings": 4
+  },
+  {
+    "title": "Beef Chili",
+    "description": "Hearty slow-simmered chili with beans and warming spices.",
+    "content": "## Ingredients\n\n- 700g ground beef\n- 1 onion, diced\n- 3 cloves garlic, minced\n- 2 tbsp chili powder\n- 1 tsp cumin\n- 800g crushed tomatoes\n- 2 cans kidney beans, drained\n- 1 cup beef stock\n- salt to taste\n\n## Instructions\n\n1. Brown ground beef in a large pot over medium heat, then remove excess fat.\n2. Add onion and garlic, cooking until softened.\n3. Stir in chili powder and cumin and cook for 1 minute until fragrant.\n4. Add crushed tomatoes, kidney beans, and beef stock, stirring to combine.\n5. Simmer uncovered for at least 1.5 hours, stirring occasionally, until thickened.\n6. Season with salt to taste and serve with cornbread or rice.\n",
+    "tags": ["dinner", "comfort-food", "spicy"],
+    "prepTimeMinutes": 15,
+    "cookTimeMinutes": 90,
+    "servings": 6
+  },
+  {
+    "title": "Lemon Garlic Roasted Chicken",
+    "description": "Whole roasted chicken with lemon, garlic, and fresh herbs.",
+    "content": "## Ingredients\n\n- 1 whole chicken (about 1.8kg)\n- 1 lemon, halved\n- 1 head garlic, halved\n- 3 tbsp olive oil\n- fresh rosemary and thyme sprigs\n- salt and pepper to taste\n\n## Instructions\n\n1. Preheat oven to 200C (400F).\n2. Pat the chicken dry and season generously inside and out with salt and pepper.\n3. Stuff the cavity with lemon halves, garlic, and herb sprigs.\n4. Rub the outside of the chicken with olive oil.\n5. Roast for 70-80 minutes, until the internal temperature reaches 74C (165F) and the skin is golden.\n6. Let rest for 10 minutes before carving.\n",
+    "tags": ["dinner", "roast"],
+    "prepTimeMinutes": 15,
+    "cookTimeMinutes": 75,
+    "servings": 4
+  }
+]
