@@ -9,6 +9,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Persistent entity representing a recipe.
@@ -42,6 +44,30 @@ public class Recipe {
      */
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
+
+    /**
+     * Optional freeform labels for categorizing and filtering recipes.
+     */
+    @ElementCollection
+    @CollectionTable(name = "recipe_tags", joinColumns = @JoinColumn(name = "recipe_id"))
+    @Column(name = "tag")
+    @Builder.Default
+    private List<String> tags = new ArrayList<>();
+
+    /**
+     * Estimated preparation time in minutes.
+     */
+    private Integer prepTimeMinutes;
+
+    /**
+     * Estimated cooking time in minutes.
+     */
+    private Integer cookTimeMinutes;
+
+    /**
+     * Number of servings this recipe yields.
+     */
+    private Integer servings;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)

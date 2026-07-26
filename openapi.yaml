@@ -45,6 +45,10 @@ paths:
                   title: Classic Banana Bread
                   description: Moist and simple banana bread, ready in 1 hour
                   content: "## Ingredients\n- 3 ripe bananas\n\n## Steps\n1. Mash bananas."
+                  tags: [breakfast, quick]
+                  prepTimeMinutes: 10
+                  cookTimeMinutes: 60
+                  servings: 8
                   createdAt: "2024-01-15T09:00:00Z"
                   updatedAt: "2024-01-15T09:00:00Z"
 
@@ -65,6 +69,10 @@ paths:
               title: Classic Banana Bread
               description: Moist and simple banana bread, ready in 1 hour
               content: "## Ingredients\n- 3 ripe bananas\n\n## Steps\n1. Mash bananas."
+              tags: [breakfast, quick]
+              prepTimeMinutes: 10
+              cookTimeMinutes: 60
+              servings: 8
       responses:
         "201":
           description: Recipe created
@@ -196,6 +204,35 @@ components:
           type: string
           description: Full recipe body in Markdown format
           example: "## Ingredients\n- 3 ripe bananas\n\n## Steps\n1. Mash bananas."
+        tags:
+          type: array
+          items:
+            type: string
+          maxItems: 20
+          nullable: true
+          description: Optional freeform labels for categorizing and filtering recipes
+          example: [breakfast, quick]
+        prepTimeMinutes:
+          type: integer
+          format: int32
+          nullable: true
+          minimum: 0
+          description: Estimated preparation time in minutes
+          example: 10
+        cookTimeMinutes:
+          type: integer
+          format: int32
+          nullable: true
+          minimum: 0
+          description: Estimated cooking time in minutes
+          example: 60
+        servings:
+          type: integer
+          format: int32
+          nullable: true
+          minimum: 0
+          description: Number of servings this recipe yields
+          example: 8
 
     RecipeResponse:
       type: object
@@ -229,6 +266,35 @@ components:
           type: string
           description: Full recipe body in Markdown format
           example: "## Ingredients\n- 3 ripe bananas\n\n## Steps\n1. Mash bananas."
+        tags:
+          type: array
+          items:
+            type: string
+          maxItems: 20
+          nullable: true
+          description: Optional freeform labels for categorizing and filtering recipes
+          example: [breakfast, quick]
+        prepTimeMinutes:
+          type: integer
+          format: int32
+          nullable: true
+          minimum: 0
+          description: Estimated preparation time in minutes
+          example: 10
+        cookTimeMinutes:
+          type: integer
+          format: int32
+          nullable: true
+          minimum: 0
+          description: Estimated cooking time in minutes
+          example: 60
+        servings:
+          type: integer
+          format: int32
+          nullable: true
+          minimum: 0
+          description: Number of servings this recipe yields
+          example: 8
         createdAt:
           type: string
           format: date-time
