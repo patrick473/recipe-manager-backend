@@ -86,6 +86,14 @@
       <artifactId>spring-boot-starter-webmvc-test</artifactId>
       <scope>test</scope>
     </dependency>
+    <!-- spring-boot-resttestclient's Maven POM (unlike its Gradle module metadata)
+         doesn't declare this transitively, so TestRestTemplate fails at runtime
+         with a NoClassDefFoundError for RestTemplateBuilder without it. -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-restclient</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>

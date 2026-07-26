@@ -69,6 +69,15 @@ public class Recipe {
      */
     private Integer servings;
 
+    /**
+     * Generated filename (e.g. {@code 3f2a91e0-....jpg}) of the recipe's hero image,
+     * as stored by {@link com.example.recipemanager.service.ImageStorageService}.
+     * {@code null} when the recipe has no image. Never a full path or the
+     * client-supplied filename.
+     */
+    @Column(name = "image_filename")
+    private String imageFilename;
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
