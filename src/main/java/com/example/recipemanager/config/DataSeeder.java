@@ -1,58 +1,58 @@
 package com.example.recipemanager.config;
 
+import com.example.recipemanager.dto.RecipeRequest;
 import com.example.recipemanager.model.Recipe;
 import com.example.recipemanager.repository.RecipeRepository;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 /**
- * Seeds a default recipe on startup so a fresh database is never empty.
- * Only runs when the table has no rows, so it is a no-op on restarts
- * against a persistent (e.g. PostgreSQL) database that already has data.
+ * Seeds recipes from the bundled {@code data/mock-recipes.json} classpath resource on
+ * startup so a fresh database is never empty. Only runs when the table has no rows, so
+ * it is a no-op on restarts against a persistent (e.g. PostgreSQL) database that already
+ * has data.
  */
 @Component
 public class DataSeeder implements CommandLineRunner {
 
-    private final RecipeRepository recipeRepository;
+    private static final String SEED_FILE = "data/mock-recipes.json";
 
-    public DataSeeder(RecipeRepository recipeRepository) {
+    private final RecipeRepository recipeRepository;
+    private final ObjectMapper objectMapper;
+
+    public DataSeeder(RecipeRepository recipeRepository, ObjectMapper objectMapper) {
         this.recipeRepository = recipeRepository;
+        this.objectMapper = objectMapper;
     }
 
     @Override
-    public void run(String... args) {
+    public void run(String... args) throws IOException {
         if (recipeRepository.count() > 0) {
             return;
         }
 
-        recipeRepository.save(Recipe.builder()
-                .title("Classic Pancakes")
-                .description("Fluffy breakfast pancakes from scratch.")
-                .content("""
-                        ## Ingredients
+        try (InputStream in = new ClassPathResource(SEED_FILE).getInputStream()) {
+            List<RecipeRequest> seedRecipes = objectMapper.readValue(in, new TypeReference<>() {});
+            recipeRepository.saveAll(seedRecipes.stream().map(this::toEntity).toList());
+        }
+    }
 
-                        - 1 1/2 cups all-purpose flour
-                        - 3 1/2 tsp baking powder
-                        - 1 tsp salt
-                        - 1 tbsp sugar
-                        - 1 1/4 cups milk
-                        - 1 egg
-                        - 3 tbsp melted butter
-
-                        ## Instructions
-
-                        1. Whisk together flour, baking powder, salt, and sugar.
-                        2. In a separate bowl, mix milk, egg, and melted butter.
-                        3. Combine wet and dry ingredients, stirring until just mixed.
-                        4. Pour 1/4 cup batter per pancake onto a hot, greased griddle.
-                        5. Cook until bubbles form on the surface, then flip and cook until golden.
-                        """)
-                .tags(List.of("breakfast", "quick"))
-                .prepTimeMinutes(10)
-                .cookTimeMinutes(15)
-                .servings(4)
-                .build());
+    private Recipe toEntity(RecipeRequest request) {
+        return Recipe.builder()
+                .title(request.getTitle())
+                .description(request.getDescription())
+                .content(request.getContent())
+                .tags(request.getTags() != null ? request.getTags() : List.of())
+                .prepTimeMinutes(request.getPrepTimeMinutes())
+                .cookTimeMinutes(request.getCookTimeMinutes())
+                .servings(request.getServings())
+                .build();
     }
 }
