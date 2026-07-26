@@ -5,6 +5,8 @@ import com.example.recipemanager.repository.RecipeRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 /**
  * Seeds a default recipe on startup so a fresh database is never empty.
  * Only runs when the table has no rows, so it is a no-op on restarts
@@ -47,6 +49,10 @@ public class DataSeeder implements CommandLineRunner {
                         4. Pour 1/4 cup batter per pancake onto a hot, greased griddle.
                         5. Cook until bubbles form on the surface, then flip and cook until golden.
                         """)
+                .tags(List.of("breakfast", "quick"))
+                .prepTimeMinutes(10)
+                .cookTimeMinutes(15)
+                .servings(4)
                 .build());
     }
 }

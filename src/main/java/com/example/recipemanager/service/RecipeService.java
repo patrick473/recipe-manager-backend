@@ -43,6 +43,10 @@ public class RecipeService {
                 .title(request.getTitle())
                 .description(request.getDescription())
                 .content(request.getContent())
+                .tags(request.getTags() != null ? request.getTags() : List.of())
+                .prepTimeMinutes(request.getPrepTimeMinutes())
+                .cookTimeMinutes(request.getCookTimeMinutes())
+                .servings(request.getServings())
                 .build();
         return toResponse(repository.save(entity));
     }
@@ -55,6 +59,10 @@ public class RecipeService {
         entity.setTitle(request.getTitle());
         entity.setDescription(request.getDescription());
         entity.setContent(request.getContent());
+        entity.setTags(request.getTags() != null ? request.getTags() : List.of());
+        entity.setPrepTimeMinutes(request.getPrepTimeMinutes());
+        entity.setCookTimeMinutes(request.getCookTimeMinutes());
+        entity.setServings(request.getServings());
         return toResponse(repository.save(entity));
     }
 
@@ -77,6 +85,10 @@ public class RecipeService {
                 .title(entity.getTitle())
                 .description(entity.getDescription())
                 .content(entity.getContent())
+                .tags(entity.getTags())
+                .prepTimeMinutes(entity.getPrepTimeMinutes())
+                .cookTimeMinutes(entity.getCookTimeMinutes())
+                .servings(entity.getServings())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .build();
