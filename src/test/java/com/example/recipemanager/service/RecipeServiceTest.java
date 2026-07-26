@@ -36,11 +36,14 @@ class RecipeServiceTest {
     @Mock
     private RecipeRepository repository;
 
+    @Mock
+    private ImageStorageService imageStorageService;
+
     private RecipeService service;
 
     @org.junit.jupiter.api.BeforeEach
     void setUp() {
-        service = new RecipeService(repository);
+        service = new RecipeService(repository, imageStorageService);
     }
 
     @Test

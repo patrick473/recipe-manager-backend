@@ -4,6 +4,7 @@ import com.example.recipemanager.dto.RecipePageResponse;
 import com.example.recipemanager.dto.RecipeRequest;
 import com.example.recipemanager.dto.RecipeResponse;
 import com.example.recipemanager.exception.InvalidSortFieldException;
+import com.example.recipemanager.service.RecipeImage;
 import com.example.recipemanager.service.RecipeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -16,16 +17,21 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * REST controller exposing the five CRUD endpoints for recipes.
@@ -199,5 +205,77 @@ public class RecipeController {
     public void delete(
             @Parameter(description = "Recipe surrogate key", example = "1") @PathVariable Long id) {
         service.delete(id);
+    }
+
+    // =========================================================================
+    // POST /recipes/{id}/image
+    // =========================================================================
+
+    @Operation(summary = "Upload a recipe's hero image",
+               description = "Uploads (or replaces) the recipe's single hero image. Accepts "
+                       + "multipart/form-data with a single part named `file`. Only image/jpeg, "
+                       + "image/png, and image/webp are accepted, and the bytes must actually "
+                       + "decode as an image regardless of the declared content type. Replacing "
+                       + "an existing image deletes the previous file from disk.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Image stored; updated recipe returned",
+                     content = @Content(schema = @Schema(implementation = RecipeResponse.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid image (bad/unsupported content "
+                + "type, file does not decode as an image, or exceeds the size limit)",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+        @ApiResponse(responseCode = "404", description = "Recipe not found",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    @PostMapping(value = "/{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public RecipeResponse uploadImage(
+            @Parameter(description = "Recipe surrogate key", example = "1") @PathVariable Long id,
+            @Parameter(description = "Image file (image/jpeg, image/png, or image/webp), max 5MB")
+            @RequestParam("file") MultipartFile file) {
+        return service.uploadImage(id, file);
+    }
+
+    // =========================================================================
+    // DELETE /recipes/{id}/image
+    // =========================================================================
+
+    @Operation(summary = "Delete a recipe's hero image",
+               description = "Removes the stored image file and clears the recipe's image "
+                       + "reference. Idempotent: returns 200 with the unchanged recipe when it "
+                       + "already had no image, rather than erroring.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Image removed (or recipe already had none); updated recipe returned",
+                     content = @Content(schema = @Schema(implementation = RecipeResponse.class))),
+        @ApiResponse(responseCode = "404", description = "Recipe not found",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    @DeleteMapping("/{id}/image")
+    public RecipeResponse deleteImage(
+            @Parameter(description = "Recipe surrogate key", example = "1") @PathVariable Long id) {
+        return service.deleteImage(id);
+    }
+
+    // =========================================================================
+    // GET /recipes/{id}/image
+    // =========================================================================
+
+    @Operation(summary = "Get a recipe's hero image",
+               description = "Streams the raw image bytes for the recipe's hero image. Filenames "
+                       + "are content-addressed, so responses are cacheable indefinitely.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Image bytes",
+                     content = @Content(mediaType = "image/*")),
+        @ApiResponse(responseCode = "404", description = "Recipe not found, or recipe has no image",
+                     content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    @GetMapping(value = "/{id}/image",
+                produces = {MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE, "image/webp"})
+    public ResponseEntity<Resource> getImage(
+            @Parameter(description = "Recipe surrogate key", example = "1") @PathVariable Long id) {
+        RecipeImage image = service.loadImage(id);
+        return ResponseEntity.ok()
+                .contentType(image.contentType())
+                .cacheControl(CacheControl.maxAge(365, TimeUnit.DAYS).immutable())
+                .eTag(image.eTag())
+                .body(image.resource());
     }
 }

@@ -43,6 +43,10 @@ public class RecipeResponse {
     @Schema(description = "Number of servings this recipe yields", example = "8")
     private Integer servings;
 
+    @Schema(description = "Relative URL for the recipe's hero image, or null if it has none",
+            example = "/recipes/1/image")
+    private String imageUrl;
+
     @Schema(description = "UTC timestamp of first creation")
     private Instant createdAt;
 

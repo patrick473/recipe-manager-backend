@@ -6,6 +6,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.net.URI;
 import java.util.Map;
@@ -30,6 +31,31 @@ public class GlobalExceptionHandler {
         ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
         pd.setType(URI.create("https://example.com/errors/invalid-sort-field"));
         pd.setTitle("Invalid Sort Field");
+        return pd;
+    }
+
+    @ExceptionHandler(InvalidImageException.class)
+    public ProblemDetail handleInvalidImage(InvalidImageException ex) {
+        ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+        pd.setType(URI.create("https://example.com/errors/invalid-image"));
+        pd.setTitle("Invalid Image");
+        return pd;
+    }
+
+    @ExceptionHandler(ImageNotFoundException.class)
+    public ProblemDetail handleImageNotFound(ImageNotFoundException ex) {
+        ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        pd.setType(URI.create("https://example.com/errors/image-not-found"));
+        pd.setTitle("Image Not Found");
+        return pd;
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ProblemDetail handleMaxUploadSizeExceeded(MaxUploadSizeExceededException ex) {
+        ProblemDetail pd = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST, "Uploaded file exceeds the maximum allowed size");
+        pd.setType(URI.create("https://example.com/errors/image-too-large"));
+        pd.setTitle("Image Too Large");
         return pd;
     }
 
