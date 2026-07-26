@@ -25,6 +25,14 @@ public class GlobalExceptionHandler {
         return pd;
     }
 
+    @ExceptionHandler(InvalidSortFieldException.class)
+    public ProblemDetail handleInvalidSortField(InvalidSortFieldException ex) {
+        ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+        pd.setType(URI.create("https://example.com/errors/invalid-sort-field"));
+        pd.setTitle("Invalid Sort Field");
+        return pd;
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ProblemDetail handleValidation(MethodArgumentNotValidException ex) {
         Map<String, String> fieldErrors = ex.getBindingResult().getFieldErrors().stream()

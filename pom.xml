@@ -72,6 +72,20 @@
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
     </dependency>
+
+    <!-- Test slices: Spring Boot 4's modularized layout requires these
+         explicitly for @DataJpaTest / @WebMvcTest (no longer pulled in by
+         spring-boot-starter-test alone). -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-jpa-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-webmvc-test</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
