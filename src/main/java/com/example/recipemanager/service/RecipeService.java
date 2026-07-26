@@ -1,15 +1,22 @@
 package com.example.recipemanager.service;
 
+import com.example.recipemanager.dto.RecipePageResponse;
 import com.example.recipemanager.dto.RecipeRequest;
 import com.example.recipemanager.dto.RecipeResponse;
 import com.example.recipemanager.exception.RecipeNotFoundException;
 import com.example.recipemanager.model.Recipe;
 import com.example.recipemanager.repository.RecipeRepository;
+import com.example.recipemanager.repository.RecipeSpecifications;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 /**
  * Business logic for managing recipes.
@@ -22,11 +29,36 @@ public class RecipeService {
 
     private final RecipeRepository repository;
 
-    /** Return every recipe in ascending id order. */
-    public List<RecipeResponse> findAll() {
-        return repository.findAll().stream()
+    /**
+     * Return a page of recipes matching the given filters, mapped to a
+     * {@link RecipePageResponse}. {@code q} and {@code tags} are combined
+     * with AND semantics when both are present; either may be blank/empty to
+     * mean "no filter".
+     */
+    public RecipePageResponse findAll(String q, List<String> tags, Pageable pageable) {
+        // Specification.allOf()/and() reject null elements outright, so only the
+        // filters that actually apply (q/tags present) are combined; an empty
+        // filter set falls back to Specification.allOf(List.of()), i.e. "match everything".
+        List<Specification<Recipe>> activeSpecs = Stream.of(
+                        RecipeSpecifications.titleOrDescriptionContains(q),
+                        RecipeSpecifications.hasAnyTag(tags))
+                .filter(Objects::nonNull)
+                .toList();
+        Specification<Recipe> spec = Specification.allOf(activeSpecs);
+
+        Page<Recipe> page = repository.findAll(spec, pageable);
+
+        List<RecipeResponse> content = page.getContent().stream()
                 .map(this::toResponse)
                 .toList();
+
+        return RecipePageResponse.builder()
+                .content(content)
+                .page(page.getNumber())
+                .size(page.getSize())
+                .totalElements(page.getTotalElements())
+                .totalPages(page.getTotalPages())
+                .build();
     }
 
     /** Return a single recipe or throw 404. */
