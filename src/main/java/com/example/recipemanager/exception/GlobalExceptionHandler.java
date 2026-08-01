@@ -50,6 +50,14 @@ public class GlobalExceptionHandler {
         return pd;
     }
 
+    @ExceptionHandler(UsernameAlreadyExistsException.class)
+    public ProblemDetail handleUsernameAlreadyExists(UsernameAlreadyExistsException ex) {
+        ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        pd.setType(URI.create("https://example.com/errors/username-taken"));
+        pd.setTitle("Username Already Taken");
+        return pd;
+    }
+
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ProblemDetail handleMaxUploadSizeExceeded(MaxUploadSizeExceededException ex) {
         ProblemDetail pd = ProblemDetail.forStatusAndDetail(

@@ -21,10 +21,103 @@ servers:
     description: Production server
 
 tags:
+  - name: Auth
+    description: Register a new account or log into an existing one
   - name: Recipes
     description: Create, read, update, and delete Markdown-based recipes
 
+security:
+  - bearerAuth: []
+
 paths:
+  /auth/register:
+    post:
+      summary: Register a new account
+      description: >
+        Creates the account and immediately logs it in, returning a token in
+        the same shape as `POST /auth/login` — no separate login call is
+        required afterward.
+      operationId: register
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+            example:
+              username: jsmith
+              password: correcthorsebattery
+      responses:
+        "201":
+          description: Account created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Blank username or password shorter than 8 characters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+              example:
+                type: "https://example.com/errors/validation-failed"
+                title: Validation Failed
+                status: 400
+                detail: Request validation failed
+                errors:
+                  password: "Password must be at least 8 characters"
+        "409":
+          description: Username already taken
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+              example:
+                type: "https://example.com/errors/username-taken"
+                title: Username Already Taken
+                status: 409
+                detail: "Username already taken: jsmith"
+
+  /auth/login:
+    post:
+      summary: Log into an existing account
+      description: >
+        Wrong username or wrong password both produce the same 401 — the
+        response never reveals which one was incorrect.
+      operationId: login
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+            example:
+              username: jsmith
+              password: correcthorsebattery
+      responses:
+        "200":
+          description: Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Wrong username or password
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+              example:
+                type: "https://example.com/errors/unauthorized"
+                title: Unauthorized
+                status: 401
+                detail: "Full authentication is required to access this resource"
+
   /recipes:
     get:
       summary: List recipes
@@ -34,6 +127,7 @@ paths:
         when both are present.
       operationId: listRecipes
       tags: [Recipes]
+      security: []
       parameters:
         - name: q
           in: query
@@ -168,6 +262,18 @@ paths:
                 detail: Request validation failed
                 errors:
                   title: "Title must not be blank"
+        "401":
+          description: Missing, invalid, or expired bearer token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "403":
+          description: Authenticated but not permitted to perform this action
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
 
   /recipes/{id}:
     parameters:
@@ -185,6 +291,7 @@ paths:
       description: Returns the recipe with the given `id`.
       operationId: getRecipe
       tags: [Recipes]
+      security: []
       responses:
         "200":
           description: Recipe found
@@ -237,6 +344,18 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ProblemDetail"
+        "401":
+          description: Missing, invalid, or expired bearer token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "403":
+          description: Authenticated but not permitted to perform this action
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
 
     delete:
       summary: Delete a recipe
@@ -250,6 +369,18 @@ paths:
           description: Recipe deleted — no content
         "404":
           description: No recipe exists with the given `id`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "401":
+          description: Missing, invalid, or expired bearer token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "403":
+          description: Authenticated but not permitted to perform this action
           content:
             application/json:
               schema:
@@ -310,6 +441,18 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ProblemDetail"
+        "401":
+          description: Missing, invalid, or expired bearer token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "403":
+          description: Authenticated but not permitted to perform this action
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
 
     delete:
       summary: Delete a recipe's hero image
@@ -331,6 +474,18 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ProblemDetail"
+        "401":
+          description: Missing, invalid, or expired bearer token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "403":
+          description: Authenticated but not permitted to perform this action
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
 
     get:
       summary: Get a recipe's hero image
@@ -340,6 +495,7 @@ paths:
         content-addressed, so a cache-bust on replace is automatic).
       operationId: getRecipeImage
       tags: [Recipes]
+      security: []
       responses:
         "200":
           description: The recipe's image bytes
@@ -364,6 +520,15 @@ paths:
                 $ref: "#/components/schemas/ProblemDetail"
 
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: >
+        Send the token returned by `POST /auth/register` or
+        `POST /auth/login` as `Authorization: Bearer <token>`.
+
   schemas:
     RecipeRequest:
       type: object
@@ -564,3 +729,60 @@ components:
           example:
             title: "Title must not be blank"
             content: "Content must not be blank"
+
+    RegisterRequest:
+      type: object
+      description: Payload for creating a new account
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+          description: Unique account username
+          example: jsmith
+        password:
+          type: string
+          minLength: 8
+          description: Account password, minimum 8 characters
+          example: correcthorsebattery
+
+    LoginRequest:
+      type: object
+      description: Payload for logging into an existing account
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+          description: Account username
+          example: jsmith
+        password:
+          type: string
+          description: Account password
+          example: correcthorsebattery
+
+    AuthResponse:
+      type: object
+      description: Issued on successful register/login
+      required:
+        - token
+        - userId
+        - username
+      properties:
+        token:
+          type: string
+          description: Signed JWT to send as `Authorization Bearer <token>` on subsequent requests
+          readOnly: true
+        userId:
+          type: integer
+          format: int64
+          description: Authenticated account id
+          example: 1
+          readOnly: true
+        username:
+          type: string
+          description: Authenticated account username
+          example: jsmith
+          readOnly: true

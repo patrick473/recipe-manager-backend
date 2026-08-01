@@ -4,6 +4,7 @@ import com.example.recipemanager.dto.RecipePageResponse;
 import com.example.recipemanager.dto.RecipeRequest;
 import com.example.recipemanager.dto.RecipeResponse;
 import com.example.recipemanager.exception.InvalidSortFieldException;
+import com.example.recipemanager.security.UserPrincipal;
 import com.example.recipemanager.service.RecipeImage;
 import com.example.recipemanager.service.RecipeService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,6 +27,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -164,8 +166,9 @@ public class RecipeController {
     })
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    public RecipeResponse create(@Valid @RequestBody RecipeRequest request) {
-        return service.create(request);
+    public RecipeResponse create(
+            @Valid @RequestBody RecipeRequest request, @AuthenticationPrincipal UserPrincipal principal) {
+        return service.create(request, principal.getId());
     }
 
     // =========================================================================
@@ -185,8 +188,9 @@ public class RecipeController {
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public RecipeResponse update(
             @Parameter(description = "Recipe surrogate key", example = "1") @PathVariable Long id,
-            @Valid @RequestBody RecipeRequest request) {
-        return service.update(id, request);
+            @Valid @RequestBody RecipeRequest request,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        return service.update(id, request, principal.getId());
     }
 
     // =========================================================================
@@ -203,8 +207,9 @@ public class RecipeController {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(
-            @Parameter(description = "Recipe surrogate key", example = "1") @PathVariable Long id) {
-        service.delete(id);
+            @Parameter(description = "Recipe surrogate key", example = "1") @PathVariable Long id,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        service.delete(id, principal.getId());
     }
 
     // =========================================================================
@@ -230,8 +235,9 @@ public class RecipeController {
     public RecipeResponse uploadImage(
             @Parameter(description = "Recipe surrogate key", example = "1") @PathVariable Long id,
             @Parameter(description = "Image file (image/jpeg, image/png, or image/webp), max 5MB")
-            @RequestParam("file") MultipartFile file) {
-        return service.uploadImage(id, file);
+            @RequestParam("file") MultipartFile file,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        return service.uploadImage(id, file, principal.getId());
     }
 
     // =========================================================================
@@ -250,8 +256,9 @@ public class RecipeController {
     })
     @DeleteMapping("/{id}/image")
     public RecipeResponse deleteImage(
-            @Parameter(description = "Recipe surrogate key", example = "1") @PathVariable Long id) {
-        return service.deleteImage(id);
+            @Parameter(description = "Recipe surrogate key", example = "1") @PathVariable Long id,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        return service.deleteImage(id, principal.getId());
     }
 
     // =========================================================================

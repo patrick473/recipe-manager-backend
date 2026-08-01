@@ -1,6 +1,7 @@
 package com.example.recipemanager.repository;
 
 import com.example.recipemanager.model.Recipe;
+import com.example.recipemanager.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,28 +29,34 @@ class RecipeRepositoryTest {
     @Autowired
     private RecipeRepository repository;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    private User owner;
+
     private Recipe bananaPancakes;
     private Recipe veggieSoup;
     private Recipe chocolateCake;
-    private Recipe garlicBread;
     private Recipe grilledCheese;
 
     @BeforeEach
     void seedRecipes() {
+        owner = userRepository.save(User.builder().username("owner").password("hash").build());
+
         bananaPancakes = repository.save(recipe(
-                "Banana Pancakes", "Fluffy breakfast favorite", List.of("breakfast", "quick"), 10, 15));
+                "Banana Pancakes", "Fluffy breakfast favorite", List.of("breakfast", "quick"), 10, 15, owner));
         veggieSoup = repository.save(recipe(
-                "Veggie Soup", "A warm bowl with banana peppers", List.of("soup", "quick"), null, 30));
+                "Veggie Soup", "A warm bowl with banana peppers", List.of("soup", "quick"), null, 30, owner));
         chocolateCake = repository.save(recipe(
-                "Chocolate Cake", "Rich and decadent dessert", List.of("dessert", "quick"), 20, 45));
-        garlicBread = repository.save(recipe(
-                "Garlic Bread", "Crispy and buttery", List.of("side"), 5, null));
+                "Chocolate Cake", "Rich and decadent dessert", List.of("dessert", "quick"), 20, 45, owner));
+        repository.save(recipe(
+                "Garlic Bread", "Crispy and buttery", List.of("side"), 5, null, owner));
         grilledCheese = repository.save(recipe(
-                "Grilled Cheese", "Simple and satisfying", List.of("quick"), 2, 8));
+                "Grilled Cheese", "Simple and satisfying", List.of("quick"), 2, 8, owner));
     }
 
     private static Recipe recipe(String title, String description, List<String> tags,
-                                  Integer prepTimeMinutes, Integer cookTimeMinutes) {
+                                  Integer prepTimeMinutes, Integer cookTimeMinutes, User owner) {
         return Recipe.builder()
                 .title(title)
                 .description(description)
@@ -58,6 +65,7 @@ class RecipeRepositoryTest {
                 .prepTimeMinutes(prepTimeMinutes)
                 .cookTimeMinutes(cookTimeMinutes)
                 .servings(4)
+                .owner(owner)
                 .build();
     }
 

@@ -85,4 +85,13 @@ public class Recipe {
     @UpdateTimestamp
     @Column(nullable = false)
     private Instant updatedAt;
+
+    /**
+     * The account this recipe belongs to. Every recipe is owned by exactly
+     * one account — never exposed on {@link com.example.recipemanager.dto.RecipeResponse},
+     * since the frontend only ever sees "my recipes."
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User owner;
 }
