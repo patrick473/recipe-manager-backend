@@ -9,6 +9,7 @@ import com.example.recipemanager.exception.RecipeNotFoundException;
 import com.example.recipemanager.model.Recipe;
 import com.example.recipemanager.repository.RecipeRepository;
 import com.example.recipemanager.repository.RecipeSpecifications;
+import com.example.recipemanager.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,15 +22,26 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.imageio.ImageIO;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
 /**
  * Business logic for managing recipes.
  * Converts between the {@link Recipe} JPA entity and the {@link RecipeResponse} DTO.
+ * <p>
+ * Recipes are readable by anyone (any authenticated account): {@code findAll},
+ * {@code findById}, and {@code loadImage} never filter by caller identity.
+ * Mutations are exclusive to the owner, though — {@code update}/{@code delete}/
+ * {@code uploadImage}/{@code deleteImage} take the caller's account id
+ * ({@code ownerId}) as a plain parameter (never read from
+ * {@code SecurityContextHolder} here, so this class stays testable without a
+ * security context) and treat an id owned by someone else exactly like a
+ * nonexistent id — a 404 via the existing not-found exceptions, never a 403.
  */
 @Service
 @RequiredArgsConstructor
@@ -41,17 +53,17 @@ public class RecipeService {
 
     private final RecipeRepository repository;
     private final ImageStorageService imageStorageService;
+    private final UserRepository userRepository;
 
     /**
-     * Return a page of recipes matching the given filters, mapped to a
-     * {@link RecipePageResponse}. {@code q} and {@code tags} are combined
-     * with AND semantics when both are present; either may be blank/empty to
-     * mean "no filter".
+     * Return a page of all recipes (from every account) matching the given
+     * filters, mapped to a {@link RecipePageResponse}. {@code q} and {@code tags}
+     * are combined with AND semantics when both are present; either may be
+     * blank/empty to mean "no filter".
      */
     public RecipePageResponse findAll(String q, List<String> tags, Pageable pageable) {
         // Specification.allOf()/and() reject null elements outright, so only the
-        // filters that actually apply (q/tags present) are combined; an empty
-        // filter set falls back to Specification.allOf(List.of()), i.e. "match everything".
+        // filters that actually apply (q/tags present) are combined.
         List<Specification<Recipe>> activeSpecs = Stream.of(
                         RecipeSpecifications.titleOrDescriptionContains(q),
                         RecipeSpecifications.hasAnyTag(tags))
@@ -74,50 +86,54 @@ public class RecipeService {
                 .build();
     }
 
-    /** Return a single recipe or throw 404. */
+    /** Return a single recipe by id, regardless of who owns it, or throw 404. */
     public RecipeResponse findById(Long id) {
         return repository.findById(id)
                 .map(this::toResponse)
                 .orElseThrow(() -> new RecipeNotFoundException(id));
     }
 
-    /** Persist a new recipe and return the persisted representation. */
+    /** Persist a new recipe owned by {@code ownerId} and return the persisted representation. */
     @Transactional
-    public RecipeResponse create(RecipeRequest request) {
+    public RecipeResponse create(RecipeRequest request, Long ownerId) {
         Recipe entity = Recipe.builder()
                 .title(request.getTitle())
                 .description(request.getDescription())
                 .content(request.getContent())
-                .tags(request.getTags() != null ? request.getTags() : List.of())
+                .tags(request.getTags() != null ? new ArrayList<>(request.getTags()) : new ArrayList<>())
                 .prepTimeMinutes(request.getPrepTimeMinutes())
                 .cookTimeMinutes(request.getCookTimeMinutes())
                 .servings(request.getServings())
+                .owner(userRepository.getReferenceById(ownerId))
                 .build();
         return toResponse(repository.save(entity));
     }
 
-    /** Replace all mutable fields on an existing recipe. */
+    /** Replace all mutable fields on an existing recipe owned by {@code ownerId}. */
     @Transactional
-    public RecipeResponse update(Long id, RecipeRequest request) {
-        Recipe entity = repository.findById(id)
+    public RecipeResponse update(Long id, RecipeRequest request, Long ownerId) {
+        Recipe entity = findOwned(id, ownerId)
                 .orElseThrow(() -> new RecipeNotFoundException(id));
         entity.setTitle(request.getTitle());
         entity.setDescription(request.getDescription());
         entity.setContent(request.getContent());
-        entity.setTags(request.getTags() != null ? request.getTags() : List.of());
+        // A mutable ArrayList, not List.of(): reassigning a managed entity's
+        // @ElementCollection field to an immutable list makes Hibernate's
+        // merge-time collection reconciliation try to clear() that immutable
+        // list directly, throwing UnsupportedOperationException on save().
+        entity.setTags(request.getTags() != null ? new ArrayList<>(request.getTags()) : new ArrayList<>());
         entity.setPrepTimeMinutes(request.getPrepTimeMinutes());
         entity.setCookTimeMinutes(request.getCookTimeMinutes());
         entity.setServings(request.getServings());
         return toResponse(repository.save(entity));
     }
 
-    /** Delete a recipe by id, or throw 404 if it does not exist. */
+    /** Delete a recipe owned by {@code ownerId}, or throw 404 if it does not exist (or isn't theirs). */
     @Transactional
-    public void delete(Long id) {
-        if (!repository.existsById(id)) {
-            throw new RecipeNotFoundException(id);
-        }
-        repository.deleteById(id);
+    public void delete(Long id, Long ownerId) {
+        Recipe entity = findOwned(id, ownerId)
+                .orElseThrow(() -> new RecipeNotFoundException(id));
+        repository.delete(entity);
     }
 
     /**
@@ -128,8 +144,8 @@ public class RecipeService {
      * new filename.
      */
     @Transactional
-    public RecipeResponse uploadImage(Long id, MultipartFile file) {
-        Recipe entity = repository.findById(id)
+    public RecipeResponse uploadImage(Long id, MultipartFile file, Long ownerId) {
+        Recipe entity = findOwned(id, ownerId)
                 .orElseThrow(() -> new RecipeNotFoundException(id));
 
         validateImage(file);
@@ -149,8 +165,8 @@ public class RecipeService {
      * representation — idempotent, same spirit as the rest of this API.
      */
     @Transactional
-    public RecipeResponse deleteImage(Long id) {
-        Recipe entity = repository.findById(id)
+    public RecipeResponse deleteImage(Long id, Long ownerId) {
+        Recipe entity = findOwned(id, ownerId)
                 .orElseThrow(() -> new RecipeNotFoundException(id));
 
         if (entity.getImageFilename() != null) {
@@ -161,10 +177,11 @@ public class RecipeService {
     }
 
     /**
-     * Loads a recipe's hero image bytes plus the headers needed to serve them.
-     * Both "recipe doesn't exist" and "recipe exists but has no image" collapse
-     * to the same {@link ImageNotFoundException} (404) — this read-only,
-     * byte-streaming endpoint has no reason to distinguish the two.
+     * Loads a recipe's hero image bytes plus the headers needed to serve them,
+     * regardless of who owns the recipe. "Recipe doesn't exist" and "recipe
+     * exists but has no image" both collapse to the same
+     * {@link ImageNotFoundException} (404) — this read-only, byte-streaming
+     * endpoint has no reason to distinguish the two.
      */
     public RecipeImage loadImage(Long id) {
         Recipe entity = repository.findById(id)
@@ -182,6 +199,16 @@ public class RecipeService {
     // -------------------------------------------------------------------------
     // Private helpers
     // -------------------------------------------------------------------------
+
+    /**
+     * Loads a recipe by id and filters it to only match when owned by
+     * {@code ownerId} — used by the mutating operations, where another
+     * account's recipe id behaves exactly like a nonexistent id.
+     */
+    private Optional<Recipe> findOwned(Long id, Long ownerId) {
+        return repository.findById(id)
+                .filter(recipe -> recipe.getOwner().getId().equals(ownerId));
+    }
 
     /**
      * Validates an uploaded image in the order the spec requires (size is

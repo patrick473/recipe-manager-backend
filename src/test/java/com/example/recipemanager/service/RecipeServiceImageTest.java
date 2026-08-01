@@ -5,7 +5,9 @@ import com.example.recipemanager.exception.ImageNotFoundException;
 import com.example.recipemanager.exception.InvalidImageException;
 import com.example.recipemanager.exception.RecipeNotFoundException;
 import com.example.recipemanager.model.Recipe;
+import com.example.recipemanager.model.User;
 import com.example.recipemanager.repository.RecipeRepository;
+import com.example.recipemanager.repository.UserRepository;
 import com.example.recipemanager.testsupport.TestImages;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,17 +40,22 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class RecipeServiceImageTest {
 
+    private static final Long OWNER_ID = 1L;
+
     @Mock
     private RecipeRepository repository;
 
     @Mock
     private ImageStorageService imageStorageService;
 
+    @Mock
+    private UserRepository userRepository;
+
     private RecipeService service;
 
     @BeforeEach
     void setUp() {
-        service = new RecipeService(repository, imageStorageService);
+        service = new RecipeService(repository, imageStorageService, userRepository);
     }
 
     private static Recipe recipeWithId(Long id) {
@@ -57,6 +64,7 @@ class RecipeServiceImageTest {
                 .title("Banana Bread")
                 .description("Moist and simple")
                 .content("content")
+                .owner(User.builder().id(OWNER_ID).username("owner").password("hash").build())
                 .build();
     }
 
@@ -72,7 +80,7 @@ class RecipeServiceImageTest {
         when(repository.save(any(Recipe.class))).thenAnswer(inv -> inv.getArgument(0));
 
         MockMultipartFile file = new MockMultipartFile("file", "photo.jpg", "image/jpeg", TestImages.jpegBytes());
-        RecipeResponse response = service.uploadImage(1L, file);
+        RecipeResponse response = service.uploadImage(1L, file, OWNER_ID);
 
         assertThat(entity.getImageFilename()).isEqualTo("generated-uuid.jpg");
         assertThat(response.getImageUrl()).isEqualTo("/recipes/1/image");
@@ -88,7 +96,7 @@ class RecipeServiceImageTest {
         when(repository.save(any(Recipe.class))).thenAnswer(inv -> inv.getArgument(0));
 
         MockMultipartFile file = new MockMultipartFile("file", "photo.png", "image/png", TestImages.pngBytes());
-        RecipeResponse response = service.uploadImage(1L, file);
+        RecipeResponse response = service.uploadImage(1L, file, OWNER_ID);
 
         verify(imageStorageService).delete("old-uuid.jpg");
         assertThat(entity.getImageFilename()).isEqualTo("new-uuid.png");
@@ -102,9 +110,9 @@ class RecipeServiceImageTest {
         when(imageStorageService.store(anyLong(), any())).thenReturn("uuid.ext");
         when(repository.save(any(Recipe.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        service.uploadImage(1L, new MockMultipartFile("file", "a.jpg", "image/jpeg", TestImages.jpegBytes()));
-        service.uploadImage(1L, new MockMultipartFile("file", "a.png", "image/png", TestImages.pngBytes()));
-        service.uploadImage(1L, new MockMultipartFile("file", "a.webp", "image/webp", TestImages.webpBytes()));
+        service.uploadImage(1L, new MockMultipartFile("file", "a.jpg", "image/jpeg", TestImages.jpegBytes()), OWNER_ID);
+        service.uploadImage(1L, new MockMultipartFile("file", "a.png", "image/png", TestImages.pngBytes()), OWNER_ID);
+        service.uploadImage(1L, new MockMultipartFile("file", "a.webp", "image/webp", TestImages.webpBytes()), OWNER_ID);
     }
 
     @Test
@@ -112,7 +120,7 @@ class RecipeServiceImageTest {
         when(repository.findById(99L)).thenReturn(Optional.empty());
         MockMultipartFile file = new MockMultipartFile("file", "photo.jpg", "image/jpeg", TestImages.jpegBytes());
 
-        assertThatThrownBy(() -> service.uploadImage(99L, file))
+        assertThatThrownBy(() -> service.uploadImage(99L, file, OWNER_ID))
                 .isInstanceOf(RecipeNotFoundException.class);
 
         verifyNoInteractions(imageStorageService);
@@ -124,7 +132,7 @@ class RecipeServiceImageTest {
         when(repository.findById(1L)).thenReturn(Optional.of(entity));
         MockMultipartFile file = new MockMultipartFile("file", "photo.gif", "image/gif", TestImages.pngBytes());
 
-        assertThatThrownBy(() -> service.uploadImage(1L, file))
+        assertThatThrownBy(() -> service.uploadImage(1L, file, OWNER_ID))
                 .isInstanceOf(InvalidImageException.class);
 
         verifyNoInteractions(imageStorageService);
@@ -137,7 +145,7 @@ class RecipeServiceImageTest {
         MockMultipartFile file = new MockMultipartFile(
                 "file", "not-an-image.jpg", "image/jpeg", "just some plain text".getBytes());
 
-        assertThatThrownBy(() -> service.uploadImage(1L, file))
+        assertThatThrownBy(() -> service.uploadImage(1L, file, OWNER_ID))
                 .isInstanceOf(InvalidImageException.class);
 
         verifyNoInteractions(imageStorageService);
@@ -154,7 +162,7 @@ class RecipeServiceImageTest {
         when(repository.findById(1L)).thenReturn(Optional.of(entity));
         when(repository.save(any(Recipe.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        RecipeResponse response = service.deleteImage(1L);
+        RecipeResponse response = service.deleteImage(1L, OWNER_ID);
 
         verify(imageStorageService).delete("uuid.jpg");
         assertThat(entity.getImageFilename()).isNull();
@@ -167,7 +175,7 @@ class RecipeServiceImageTest {
         when(repository.findById(1L)).thenReturn(Optional.of(entity));
         when(repository.save(any(Recipe.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        RecipeResponse response = service.deleteImage(1L);
+        RecipeResponse response = service.deleteImage(1L, OWNER_ID);
 
         verifyNoInteractions(imageStorageService);
         assertThat(response.getImageUrl()).isNull();
@@ -178,7 +186,7 @@ class RecipeServiceImageTest {
     void deleteImageOnNonexistentRecipeThrows404() {
         when(repository.findById(99L)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.deleteImage(99L))
+        assertThatThrownBy(() -> service.deleteImage(99L, OWNER_ID))
                 .isInstanceOf(RecipeNotFoundException.class);
 
         verifyNoInteractions(imageStorageService);

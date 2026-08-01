@@ -4,6 +4,7 @@ import com.example.recipemanager.dto.RecipePageResponse;
 import com.example.recipemanager.dto.RecipeResponse;
 import com.example.recipemanager.model.Recipe;
 import com.example.recipemanager.repository.RecipeRepository;
+import com.example.recipemanager.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -39,11 +40,14 @@ class RecipeServiceTest {
     @Mock
     private ImageStorageService imageStorageService;
 
+    @Mock
+    private UserRepository userRepository;
+
     private RecipeService service;
 
     @org.junit.jupiter.api.BeforeEach
     void setUp() {
-        service = new RecipeService(repository, imageStorageService);
+        service = new RecipeService(repository, imageStorageService, userRepository);
     }
 
     @Test
