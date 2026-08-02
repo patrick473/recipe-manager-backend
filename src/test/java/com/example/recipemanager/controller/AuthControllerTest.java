@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -96,6 +97,18 @@ class AuthControllerTest {
     }
 
     @Test
+    void registerWithOverlongPasswordReturns400() throws Exception {
+        String tooLong = "a".repeat(73);
+
+        mockMvc.perform(post("/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"username":"newuser","password":"%s"}""".formatted(tooLong)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.type").value("https://example.com/errors/validation-failed"));
+    }
+
+    @Test
     void registerWithBlankUsernameReturns400() throws Exception {
         mockMvc.perform(post("/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -103,6 +116,25 @@ class AuthControllerTest {
                                 {"username":"","password":"password123"}"""))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.type").value("https://example.com/errors/validation-failed"));
+    }
+
+    @Test
+    void registerRaceLosesToConcurrentInsertReturns409() throws Exception {
+        // Both requests can pass the app-level existsByUsername check before either
+        // commits; the users.username unique constraint is what actually catches the
+        // race, surfacing as a DataIntegrityViolationException from save() instead of
+        // UsernameAlreadyExistsException.
+        when(userRepository.existsByUsername("racer")).thenReturn(false);
+        when(passwordEncoder.encode("password123")).thenReturn("bcrypt-hash");
+        when(userRepository.save(any(User.class)))
+                .thenThrow(new DataIntegrityViolationException("could not execute statement; constraint [username]"));
+
+        mockMvc.perform(post("/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"username":"racer","password":"password123"}"""))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.type").value("https://example.com/errors/username-taken"));
     }
 
     @Test

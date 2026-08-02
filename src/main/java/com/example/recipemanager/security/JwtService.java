@@ -22,12 +22,26 @@ public class JwtService {
 
     private static final String CLAIM_USER_ID = "userId";
 
+    /**
+     * The dev-convenience default checked into {@code application.properties}
+     * (kept there so a fresh checkout runs with zero config). Anyone who has
+     * read this public repo has this value, so a real deployment that never
+     * overrides {@code app.jwt.secret} (e.g. via the {@code APP_JWT_SECRET}
+     * env var) would let anyone mint valid tokens for any user — see the
+     * constructor check below, which refuses to start in that case.
+     */
+    private static final String SHIPPED_DEFAULT_SECRET = "qxkgyGHHJVYdT7Sn2rQWxvbK9rFeIwrvLMhOOx6iFd0=";
+
     private final SecretKey signingKey;
     private final long expirationMs;
 
     public JwtService(
             @Value("${app.jwt.secret}") String secret,
             @Value("${app.jwt.expiration-ms}") long expirationMs) {
+        if (SHIPPED_DEFAULT_SECRET.equals(secret)) {
+            throw new IllegalStateException(
+                    "app.jwt.secret is still the shipped default — set a real secret before deploying");
+        }
         this.signingKey = Keys.hmacShaKeyFor(Base64.getDecoder().decode(secret));
         this.expirationMs = expirationMs;
     }

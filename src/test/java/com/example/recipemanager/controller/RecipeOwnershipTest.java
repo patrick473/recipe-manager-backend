@@ -53,6 +53,10 @@ class RecipeOwnershipTest {
     @DynamicPropertySource
     static void overrideUploadDir(DynamicPropertyRegistry registry) {
         registry.add("app.storage.upload-dir", () -> tempUploadDir.toString());
+        // JwtService now refuses to construct with the shipped
+        // application.properties default (see JwtService.SHIPPED_DEFAULT_SECRET);
+        // this is a real embedded-server context load, so it needs its own secret.
+        registry.add("app.jwt.secret", () -> "93nVNqbyLh/RSvsAb1FIlGeVkimlTQ8WxAvLWegsAsQ=");
     }
 
     @LocalServerPort

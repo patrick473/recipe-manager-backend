@@ -10,6 +10,7 @@ import java.util.Base64;
 import java.util.Date;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Unit tests for {@link JwtService} — no Spring context needed, this is a
@@ -19,7 +20,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class JwtServiceTest {
 
-    private static final String SECRET = "qxkgyGHHJVYdT7Sn2rQWxvbK9rFeIwrvLMhOOx6iFd0=";
+    // Deliberately NOT the shipped default in application.properties — that
+    // literal value is reserved below for asserting the fail-fast check, so
+    // every other test here uses its own unrelated dummy secret.
+    private static final String SECRET = "HG0Mbf5uI25w245dW8nYBxXTcp8PEeD7ipACBBPfJek=";
+    private static final String SHIPPED_DEFAULT_SECRET = "qxkgyGHHJVYdT7Sn2rQWxvbK9rFeIwrvLMhOOx6iFd0=";
     private static final long EXPIRATION_MS = 60_000L;
 
     private final JwtService jwtService = new JwtService(SECRET, EXPIRATION_MS);
@@ -79,5 +84,12 @@ class JwtServiceTest {
     @Test
     void malformedTokenFailsValidation() {
         assertThat(jwtService.isTokenValid("not-a-jwt-at-all")).isFalse();
+    }
+
+    @Test
+    void constructorRejectsTheShippedDefaultSecret() {
+        assertThatThrownBy(() -> new JwtService(SHIPPED_DEFAULT_SECRET, EXPIRATION_MS))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("app.jwt.secret is still the shipped default");
     }
 }

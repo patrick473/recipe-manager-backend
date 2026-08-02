@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Exercises {@link LocalDiskImageStorageService#store}/{@code delete}/{@code load}
@@ -112,6 +113,42 @@ class LocalDiskImageStorageServiceTest {
         try (InputStream in = resource.getInputStream()) {
             assertThat(in.readAllBytes()).isEqualTo(bytes);
         }
+    }
+
+    @Test
+    void loadRejectsPathTraversalFilename() {
+        LocalDiskImageStorageService service = storageService();
+
+        assertThatThrownBy(() -> service.load("../../etc/passwd"))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void loadRejectsFilenameContainingPathSeparator() {
+        LocalDiskImageStorageService service = storageService();
+
+        assertThatThrownBy(() -> service.load("sub/photo.jpg"))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> service.load("sub\\photo.jpg"))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void deleteRejectsPathTraversalFilename() {
+        LocalDiskImageStorageService service = storageService();
+
+        assertThatThrownBy(() -> service.delete("../../etc/passwd"))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void deleteRejectsFilenameContainingPathSeparator() {
+        LocalDiskImageStorageService service = storageService();
+
+        assertThatThrownBy(() -> service.delete("sub/photo.jpg"))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> service.delete("sub\\photo.jpg"))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test

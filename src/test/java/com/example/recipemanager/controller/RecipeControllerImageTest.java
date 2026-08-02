@@ -57,6 +57,10 @@ class RecipeControllerImageTest {
     @DynamicPropertySource
     static void overrideUploadDir(DynamicPropertyRegistry registry) {
         registry.add("app.storage.upload-dir", () -> tempUploadDir.toString());
+        // JwtService now refuses to construct with the shipped
+        // application.properties default (see JwtService.SHIPPED_DEFAULT_SECRET);
+        // this is a real embedded-server context load, so it needs its own secret.
+        registry.add("app.jwt.secret", () -> "93nVNqbyLh/RSvsAb1FIlGeVkimlTQ8WxAvLWegsAsQ=");
     }
 
     @LocalServerPort
@@ -145,7 +149,7 @@ class RecipeControllerImageTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getImageUrl()).isEqualTo("/recipes/" + recipeId + "/image");
+        assertThat(response.getBody().getImageUrl()).matches("/recipes/" + recipeId + "/image\\?v=.+");
     }
 
     @Test
@@ -155,7 +159,7 @@ class RecipeControllerImageTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getImageUrl()).isEqualTo("/recipes/" + recipeId + "/image");
+        assertThat(response.getBody().getImageUrl()).matches("/recipes/" + recipeId + "/image\\?v=.+");
     }
 
     @Test
@@ -165,7 +169,29 @@ class RecipeControllerImageTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getImageUrl()).isEqualTo("/recipes/" + recipeId + "/image");
+        assertThat(response.getBody().getImageUrl()).matches("/recipes/" + recipeId + "/image\\?v=.+");
+    }
+
+    @Test
+    void replacingAnImageChangesTheVersionQueryParamButNotThePath() {
+        ResponseEntity<RecipeResponse> firstUpload =
+                upload(recipeId, TestImages.jpegBytes(), "photo.jpg", MediaType.IMAGE_JPEG);
+        assertThat(firstUpload.getStatusCode()).isEqualTo(HttpStatus.OK);
+        String firstImageUrl = firstUpload.getBody().getImageUrl();
+
+        ResponseEntity<RecipeResponse> secondUpload =
+                upload(recipeId, TestImages.pngBytes(), "photo.png", MediaType.IMAGE_PNG);
+        assertThat(secondUpload.getStatusCode()).isEqualTo(HttpStatus.OK);
+        String secondImageUrl = secondUpload.getBody().getImageUrl();
+
+        String expectedPath = "/recipes/" + recipeId + "/image";
+        assertThat(firstImageUrl).startsWith(expectedPath + "?v=");
+        assertThat(secondImageUrl).startsWith(expectedPath + "?v=");
+        assertThat(secondImageUrl).isNotEqualTo(firstImageUrl);
+
+        String firstVersion = firstImageUrl.substring(firstImageUrl.indexOf("?v=") + 3);
+        String secondVersion = secondImageUrl.substring(secondImageUrl.indexOf("?v=") + 3);
+        assertThat(secondVersion).isNotEqualTo(firstVersion);
     }
 
     @Test
