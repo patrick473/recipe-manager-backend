@@ -278,7 +278,9 @@ public class RecipeService {
                 .prepTimeMinutes(entity.getPrepTimeMinutes())
                 .cookTimeMinutes(entity.getCookTimeMinutes())
                 .servings(entity.getServings())
-                .imageUrl(entity.getImageFilename() != null ? "/recipes/" + entity.getId() + "/image" : null)
+                .imageUrl(entity.getImageFilename() != null
+                        ? "/recipes/" + entity.getId() + "/image?v=" + entity.getImageFilename()
+                        : null)
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .build();

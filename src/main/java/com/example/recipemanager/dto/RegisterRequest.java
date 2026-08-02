@@ -23,8 +23,8 @@ public class RegisterRequest {
     private String username;
 
     @NotBlank(message = "Password must not be blank")
-    @Size(min = 8, message = "Password must be at least 8 characters")
-    @Schema(description = "Account password, minimum 8 characters", example = "correcthorsebattery",
+    @Size(min = 8, max = 72, message = "Password must be between 8 and 72 characters")
+    @Schema(description = "Account password, 8-72 characters", example = "correcthorsebattery",
             requiredMode = Schema.RequiredMode.REQUIRED)
     private String password;
 }

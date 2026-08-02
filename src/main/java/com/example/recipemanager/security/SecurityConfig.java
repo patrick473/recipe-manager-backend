@@ -1,6 +1,6 @@
 package com.example.recipemanager.security;
 
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -18,6 +18,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -32,13 +33,26 @@ import java.util.List;
  */
 @Configuration
 @EnableWebSecurity
-@RequiredArgsConstructor
 public class SecurityConfig {
 
     private final JwtService jwtService;
     private final UserDetailsServiceImpl userDetailsService;
     private final ProblemDetailAuthenticationEntryPoint authenticationEntryPoint;
     private final ProblemDetailAccessDeniedHandler accessDeniedHandler;
+    private final String allowedOrigins;
+
+    public SecurityConfig(
+            JwtService jwtService,
+            UserDetailsServiceImpl userDetailsService,
+            ProblemDetailAuthenticationEntryPoint authenticationEntryPoint,
+            ProblemDetailAccessDeniedHandler accessDeniedHandler,
+            @Value("${app.cors.allowed-origins}") String allowedOrigins) {
+        this.jwtService = jwtService;
+        this.userDetailsService = userDetailsService;
+        this.authenticationEntryPoint = authenticationEntryPoint;
+        this.accessDeniedHandler = accessDeniedHandler;
+        this.allowedOrigins = allowedOrigins;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -55,20 +69,23 @@ public class SecurityConfig {
                         .authenticationEntryPoint(authenticationEntryPoint)
                         .accessDeniedHandler(accessDeniedHandler))
                 .addFilterBefore(
-                        new JwtAuthenticationFilter(jwtService, userDetailsService),
+                        new JwtAuthenticationFilter(jwtService, userDetailsService, authenticationEntryPoint),
                         UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
     /**
-     * Carries forward exactly the origins/methods/headers/max-age from
-     * {@code AppConfig}'s old {@code corsConfigurer} bean.
+     * Carries forward exactly the methods/headers/max-age from
+     * {@code AppConfig}'s old {@code corsConfigurer} bean. Allowed origins
+     * come from {@code app.cors.allowed-origins} (comma-separated) so they
+     * can be overridden per environment instead of being hardcoded.
      */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:4200", "http://localhost:3000"));
+        configuration.setAllowedOrigins(
+                Arrays.stream(allowedOrigins.split(",")).map(String::trim).toList());
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setMaxAge(3600L);

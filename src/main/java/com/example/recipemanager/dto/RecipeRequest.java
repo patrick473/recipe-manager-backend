@@ -31,12 +31,13 @@ public class RecipeRequest {
     private String description;
 
     @NotBlank(message = "Content must not be blank")
+    @Size(max = 50000, message = "Content must not exceed 50000 characters")
     @Schema(description = "Full recipe body in Markdown", example = "## Ingredients\n- 3 ripe bananas\n\n## Steps\n1. Mash bananas.", requiredMode = Schema.RequiredMode.REQUIRED)
     private String content;
 
     @Size(max = 20, message = "Tags must not exceed 20 items")
     @Schema(description = "Optional freeform labels for categorizing and filtering recipes", example = "[\"breakfast\", \"quick\"]")
-    private List<String> tags;
+    private List<@NotBlank(message = "Tag must not be blank") @Size(max = 50, message = "Tag must not exceed 50 characters") String> tags;
 
     @Min(value = 0, message = "Prep time must not be negative")
     @Schema(description = "Estimated preparation time in minutes", example = "10")

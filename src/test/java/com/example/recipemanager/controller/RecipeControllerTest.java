@@ -18,6 +18,8 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.http.MediaType;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -33,6 +35,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -214,6 +217,64 @@ class RecipeControllerTest {
         verifyNoInteractions(service);
     }
 
+    /**
+     * Covers {@code RecipeRequest.content}'s {@code @Size(max = 50000)} cap
+     * (review #13 / CODE_REVIEW_FIX_SPEC.md item 2d): a body one character
+     * over the limit must be rejected by bean validation before ever
+     * reaching {@link RecipeService}.
+     */
+    @Test
+    void createReturns400WhenContentExceedsSizeLimit() throws Exception {
+        String tooLongContent = "a".repeat(50001);
+
+        mockMvc.perform(post("/recipes")
+                        .with(authenticatedUser())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"Valid Title\",\"content\":\"" + tooLongContent + "\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.type").value("https://example.com/errors/validation-failed"));
+
+        verifyNoInteractions(service);
+    }
+
+    /**
+     * Covers {@code RecipeRequest.tags}'s per-element constraints (review #18
+     * / CODE_REVIEW_FIX_SPEC.md item 3c): a blank tag in the list must be
+     * rejected by bean validation before ever reaching {@link RecipeService},
+     * not just the list's overall {@code @Size(max = 20)} item count.
+     */
+    @Test
+    void createReturns400WhenTagIsBlank() throws Exception {
+        mockMvc.perform(post("/recipes")
+                        .with(authenticatedUser())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"Valid Title\",\"content\":\"Valid content\",\"tags\":[\"breakfast\",\"   \"]}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.type").value("https://example.com/errors/validation-failed"));
+
+        verifyNoInteractions(service);
+    }
+
+    /**
+     * Covers {@code RecipeRequest.tags}'s per-element constraints (review #18
+     * / CODE_REVIEW_FIX_SPEC.md item 3c): a single tag over 50 characters
+     * must be rejected by bean validation before ever reaching
+     * {@link RecipeService}.
+     */
+    @Test
+    void createReturns400WhenTagExceedsSizeLimit() throws Exception {
+        String tooLongTag = "a".repeat(51);
+
+        mockMvc.perform(post("/recipes")
+                        .with(authenticatedUser())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"Valid Title\",\"content\":\"Valid content\",\"tags\":[\"" + tooLongTag + "\"]}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.type").value("https://example.com/errors/validation-failed"));
+
+        verifyNoInteractions(service);
+    }
+
     @Test
     void listAllWithNoTokenSucceeds() throws Exception {
         when(service.findAll(isNull(), isNull(), any(Pageable.class))).thenReturn(emptyPageResponse());
@@ -228,5 +289,33 @@ class RecipeControllerTest {
         mockMvc.perform(get("/recipes/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("Banana Bread"));
+    }
+
+    /**
+     * Covers {@code JwtAuthenticationFilter}'s handling of a token that is
+     * validly signed and unexpired but whose subject no longer resolves to a
+     * user (e.g. the account was deleted after the token was issued):
+     * {@code userDetailsService.loadUserByUsername} throwing here must not
+     * propagate into a raw 500 (this filter runs ahead of
+     * {@code ExceptionTranslationFilter}) — it should be caught and turned
+     * into the same {@code ProblemDetail} 401 an expired/malformed token
+     * produces. Uses {@code GET /recipes}, a permitAll endpoint, specifically
+     * to prove the 401 comes from the filter rejecting the bad token up
+     * front rather than from {@code authorizeHttpRequests} rejecting an
+     * unauthenticated request.
+     */
+    @Test
+    void listAllWithTokenForDeletedUserReturns401NotServerError() throws Exception {
+        when(jwtService.isTokenValid("stale.token")).thenReturn(true);
+        when(jwtService.extractUsername("stale.token")).thenReturn("ghost");
+        when(userDetailsService.loadUserByUsername("ghost"))
+                .thenThrow(new UsernameNotFoundException("User not found: ghost"));
+
+        mockMvc.perform(get("/recipes").header("Authorization", "Bearer stale.token"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.type").value("https://example.com/errors/unauthorized"))
+                .andExpect(jsonPath("$.title").value("Unauthorized"));
+
+        verifyNoInteractions(service);
     }
 }

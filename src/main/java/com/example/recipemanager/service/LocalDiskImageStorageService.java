@@ -51,6 +51,7 @@ public class LocalDiskImageStorageService implements ImageStorageService {
 
     @Override
     public void delete(String filename) {
+        validateFilename(filename);
         try {
             Files.deleteIfExists(uploadDir.resolve(filename));
         } catch (IOException e) {
@@ -60,7 +61,20 @@ public class LocalDiskImageStorageService implements ImageStorageService {
 
     @Override
     public Resource load(String filename) {
+        validateFilename(filename);
         return new FileSystemResource(uploadDir.resolve(filename));
+    }
+
+    /**
+     * Rejects filenames that could escape {@link #uploadDir} when resolved
+     * (e.g. via {@code ..} traversal or a path separator). Every current
+     * caller passes a server-generated UUID-based filename, so this is
+     * defense-in-depth against a future caller threading user input through.
+     */
+    private static void validateFilename(String filename) {
+        if (filename.contains("/") || filename.contains("\\") || filename.contains("..")) {
+            throw new IllegalArgumentException("Invalid image filename: " + filename);
+        }
     }
 
     /**

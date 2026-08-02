@@ -83,7 +83,7 @@ class RecipeServiceImageTest {
         RecipeResponse response = service.uploadImage(1L, file, OWNER_ID);
 
         assertThat(entity.getImageFilename()).isEqualTo("generated-uuid.jpg");
-        assertThat(response.getImageUrl()).isEqualTo("/recipes/1/image");
+        assertThat(response.getImageUrl()).isEqualTo("/recipes/1/image?v=generated-uuid.jpg");
         verify(imageStorageService, never()).delete(any());
     }
 
@@ -100,7 +100,7 @@ class RecipeServiceImageTest {
 
         verify(imageStorageService).delete("old-uuid.jpg");
         assertThat(entity.getImageFilename()).isEqualTo("new-uuid.png");
-        assertThat(response.getImageUrl()).isEqualTo("/recipes/1/image");
+        assertThat(response.getImageUrl()).isEqualTo("/recipes/1/image?v=new-uuid.png");
     }
 
     @Test

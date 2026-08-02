@@ -5,7 +5,9 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -18,6 +20,15 @@ import java.io.IOException;
  * missing/invalid token is not itself an error here — it just leaves the
  * request unauthenticated; {@code SecurityConfig}'s {@code authorizeHttpRequests}
  * is what turns "unauthenticated" into a 401 for protected paths.
+ * <p>
+ * A token can pass {@code jwtService.isTokenValid} (well-formed, correctly
+ * signed, unexpired) yet still fail to resolve to an existing user — e.g. the
+ * account was deleted after the token was issued. {@code loadUserByUsername}
+ * throwing in that case is caught here explicitly: this filter runs ahead of
+ * {@code ExceptionTranslationFilter} in the chain, so an uncaught exception
+ * would otherwise surface as a raw 500 instead of the API's usual
+ * {@code ProblemDetail} 401. On that failure the chain is not continued —
+ * {@link #authenticationEntryPoint} writes the 401 directly.
  * <p>
  * Deliberately <strong>not</strong> a {@code @Component}: {@code @WebMvcTest}
  * slices always let {@code Filter}-typed beans through their component-scan
@@ -36,6 +47,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final UserDetailsServiceImpl userDetailsService;
+    private final ProblemDetailAuthenticationEntryPoint authenticationEntryPoint;
 
     @Override
     protected void doFilterInternal(
@@ -47,13 +59,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String token = header.substring(BEARER_PREFIX.length());
 
             if (jwtService.isTokenValid(token) && SecurityContextHolder.getContext().getAuthentication() == null) {
-                String username = jwtService.extractUsername(token);
-                UserPrincipal principal = (UserPrincipal) userDetailsService.loadUserByUsername(username);
+                try {
+                    String username = jwtService.extractUsername(token);
+                    UserPrincipal principal = (UserPrincipal) userDetailsService.loadUserByUsername(username);
 
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                    UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                } catch (RuntimeException e) {
+                    SecurityContextHolder.clearContext();
+                    AuthenticationException authException =
+                            new InsufficientAuthenticationException("Token subject could not be authenticated", e);
+                    authenticationEntryPoint.commence(request, response, authException);
+                    return;
+                }
             }
         }
 
