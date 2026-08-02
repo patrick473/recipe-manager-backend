@@ -263,28 +263,11 @@ paths:
                 errors:
                   title: "Title must not be blank"
         "401":
-          description: Missing, invalid, or expired bearer token
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-        "403":
-          description: Authenticated but not permitted to perform this action
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
+          $ref: "#/components/responses/Unauthorized"
 
   /recipes/{id}:
     parameters:
-      - name: id
-        in: path
-        required: true
-        description: Recipe surrogate key
-        schema:
-          type: integer
-          format: int64
-          example: 1
+      - $ref: "#/components/parameters/RecipeId"
 
     get:
       summary: Get a single recipe
@@ -300,16 +283,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/RecipeResponse"
         "404":
-          description: No recipe exists with the given `id`
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-              example:
-                type: "https://example.com/errors/recipe-not-found"
-                title: Recipe Not Found
-                status: 404
-                detail: "Recipe not found: 99"
+          $ref: "#/components/responses/RecipeNotFound"
 
     put:
       summary: Update a recipe
@@ -339,23 +313,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ProblemDetail"
         "404":
-          description: No recipe exists with the given `id`
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
+          $ref: "#/components/responses/RecipeNotFound"
         "401":
-          description: Missing, invalid, or expired bearer token
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-        "403":
-          description: Authenticated but not permitted to perform this action
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
+          $ref: "#/components/responses/Unauthorized"
 
     delete:
       summary: Delete a recipe
@@ -368,34 +328,13 @@ paths:
         "204":
           description: Recipe deleted — no content
         "404":
-          description: No recipe exists with the given `id`
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
+          $ref: "#/components/responses/RecipeNotFound"
         "401":
-          description: Missing, invalid, or expired bearer token
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-        "403":
-          description: Authenticated but not permitted to perform this action
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
+          $ref: "#/components/responses/Unauthorized"
 
   /recipes/{id}/image:
     parameters:
-      - name: id
-        in: path
-        required: true
-        description: Recipe surrogate key
-        schema:
-          type: integer
-          format: int64
-          example: 1
+      - $ref: "#/components/parameters/RecipeId"
 
     post:
       summary: Upload a recipe's hero image
@@ -436,23 +375,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ProblemDetail"
         "404":
-          description: No recipe exists with the given `id`
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
+          $ref: "#/components/responses/RecipeNotFound"
         "401":
-          description: Missing, invalid, or expired bearer token
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-        "403":
-          description: Authenticated but not permitted to perform this action
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
+          $ref: "#/components/responses/Unauthorized"
 
     delete:
       summary: Delete a recipe's hero image
@@ -469,23 +394,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/RecipeResponse"
         "404":
-          description: No recipe exists with the given `id`
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
+          $ref: "#/components/responses/RecipeNotFound"
         "401":
-          description: Missing, invalid, or expired bearer token
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-        "403":
-          description: Authenticated but not permitted to perform this action
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
+          $ref: "#/components/responses/Unauthorized"
 
     get:
       summary: Get a recipe's hero image
@@ -528,6 +439,37 @@ components:
       description: >
         Send the token returned by `POST /auth/register` or
         `POST /auth/login` as `Authorization: Bearer <token>`.
+
+  parameters:
+    RecipeId:
+      name: id
+      in: path
+      required: true
+      description: Recipe surrogate key
+      schema:
+        type: integer
+        format: int64
+        example: 1
+
+  responses:
+    Unauthorized:
+      description: Missing, invalid, or expired bearer token
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetail"
+
+    RecipeNotFound:
+      description: No recipe exists with the given `id`
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetail"
+          example:
+            type: "https://example.com/errors/recipe-not-found"
+            title: Recipe Not Found
+            status: 404
+            detail: "Recipe not found: 99"
 
   schemas:
     RecipeRequest:
@@ -739,6 +681,7 @@ components:
       properties:
         username:
           type: string
+          minLength: 1
           description: Unique account username
           example: jsmith
         password:
