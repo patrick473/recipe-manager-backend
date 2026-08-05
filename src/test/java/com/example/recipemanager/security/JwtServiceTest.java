@@ -4,6 +4,7 @@ import com.example.recipemanager.model.User;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.junit.jupiter.api.Test;
+import org.springframework.mock.env.MockEnvironment;
 
 import javax.crypto.SecretKey;
 import java.util.Base64;
@@ -27,7 +28,7 @@ class JwtServiceTest {
     private static final String SHIPPED_DEFAULT_SECRET = "qxkgyGHHJVYdT7Sn2rQWxvbK9rFeIwrvLMhOOx6iFd0=";
     private static final long EXPIRATION_MS = 60_000L;
 
-    private final JwtService jwtService = new JwtService(SECRET, EXPIRATION_MS);
+    private final JwtService jwtService = new JwtService(SECRET, EXPIRATION_MS, new MockEnvironment());
 
     private static User testUser() {
         return User.builder().id(42L).username("jsmith").password("hash").build();
@@ -45,7 +46,7 @@ class JwtServiceTest {
 
     @Test
     void expiredTokenFailsValidation() {
-        JwtService shortLivedService = new JwtService(SECRET, -1_000L); // already-expired window
+        JwtService shortLivedService = new JwtService(SECRET, -1_000L, new MockEnvironment()); // already-expired window
         String token = shortLivedService.generateToken(testUser());
 
         assertThat(shortLivedService.isTokenValid(token)).isFalse();
@@ -87,9 +88,20 @@ class JwtServiceTest {
     }
 
     @Test
-    void constructorRejectsTheShippedDefaultSecret() {
-        assertThatThrownBy(() -> new JwtService(SHIPPED_DEFAULT_SECRET, EXPIRATION_MS))
+    void constructorRejectsTheShippedDefaultSecretOutsideDevProfile() {
+        assertThatThrownBy(() -> new JwtService(SHIPPED_DEFAULT_SECRET, EXPIRATION_MS, new MockEnvironment()))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("app.jwt.secret is still the shipped default");
+    }
+
+    @Test
+    void constructorAllowsTheShippedDefaultSecretUnderDevProfile() {
+        MockEnvironment devEnvironment = new MockEnvironment();
+        devEnvironment.setActiveProfiles("dev");
+
+        JwtService devJwtService = new JwtService(SHIPPED_DEFAULT_SECRET, EXPIRATION_MS, devEnvironment);
+
+        String token = devJwtService.generateToken(testUser());
+        assertThat(devJwtService.isTokenValid(token)).isTrue();
     }
 }

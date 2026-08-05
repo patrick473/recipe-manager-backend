@@ -5,7 +5,11 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -20,6 +24,8 @@ import java.util.Date;
 @Service
 public class JwtService {
 
+    private static final Logger log = LoggerFactory.getLogger(JwtService.class);
+
     private static final String CLAIM_USER_ID = "userId";
 
     /**
@@ -28,7 +34,9 @@ public class JwtService {
      * read this public repo has this value, so a real deployment that never
      * overrides {@code app.jwt.secret} (e.g. via the {@code APP_JWT_SECRET}
      * env var) would let anyone mint valid tokens for any user — see the
-     * constructor check below, which refuses to start in that case.
+     * constructor check below, which refuses to start in that case unless
+     * the {@code dev} Spring profile is active, in which case it just logs
+     * a warning so a local run works with zero config.
      */
     private static final String SHIPPED_DEFAULT_SECRET = "qxkgyGHHJVYdT7Sn2rQWxvbK9rFeIwrvLMhOOx6iFd0=";
 
@@ -37,10 +45,18 @@ public class JwtService {
 
     public JwtService(
             @Value("${app.jwt.secret}") String secret,
-            @Value("${app.jwt.expiration-ms}") long expirationMs) {
+            @Value("${app.jwt.expiration-ms}") long expirationMs,
+            Environment environment) {
         if (SHIPPED_DEFAULT_SECRET.equals(secret)) {
-            throw new IllegalStateException(
-                    "app.jwt.secret is still the shipped default — set a real secret before deploying");
+            if (environment.acceptsProfiles(Profiles.of("dev"))) {
+                log.warn("app.jwt.secret is still the shipped default — fine for the 'dev' profile, "
+                        + "but tokens signed with it are forgeable by anyone who has read this repo. "
+                        + "Set a real secret (e.g. via APP_JWT_SECRET) before deploying for real.");
+            } else {
+                throw new IllegalStateException(
+                        "app.jwt.secret is still the shipped default — set a real secret before deploying, "
+                                + "or activate the 'dev' profile for local runs");
+            }
         }
         this.signingKey = Keys.hmacShaKeyFor(Base64.getDecoder().decode(secret));
         this.expirationMs = expirationMs;
